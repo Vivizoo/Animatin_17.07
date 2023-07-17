@@ -1,5 +1,9 @@
 import cv2
 from deepface import DeepFace
+import mediapipe as mp
+from pythonosc.udp_client import SimpleUDPClient
+
+client = SimpleUDPClient("127.0.0.1", 12000)
 
 # Load the pre-trained emotion detection model
 model = DeepFace.build_model("Emotion")
@@ -40,6 +44,24 @@ while True:
         preds = model.predict(reshaped_face)[0]
         emotion_idx = preds.argmax()
         emotion = emotion_labels[emotion_idx]
+
+        print(emotion)
+
+        if emotion == "sad":
+            client.send_message("/wek/outputs", 0.1)
+        elif emotion == "happy":
+            client.send_message("/wek/outputs", 0.2)
+        elif emotion == "neutral":
+            client.send_message("/wek/outputs", 0.3)
+        elif emotion == "angry":
+            client.send_message("/wek/outputs", 0.4)
+        elif emotion == "fear":
+            client.send_message("/wek/outputs", 0.5)
+        elif emotion == "disgust":
+            client.send_message("/wek/outputs", 0.6)
+        elif emotion == "surprise":
+            client.send_message("/wek/outputs", 0.7)
+         
 
         # Draw rectangle around face and label with predicted emotion
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
