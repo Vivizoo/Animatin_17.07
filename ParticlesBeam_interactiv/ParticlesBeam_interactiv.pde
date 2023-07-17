@@ -1,10 +1,18 @@
-int num = 70000;
+import oscP5.*;
+import netP5.*;
+OscP5 oscP5;
+NetAddress dest;
+
+int num = 20000;
 Particle[] particles = new Particle[num];
 float noiseScale = 800, noiseStrength = 3;
+
+float mood = 0;
 
 color particleColor = color(200);
 
 void setup() {
+  oscP5 = new OscP5(this,12000); //listen for OSC messages on port 12000 (Wekinator default)
   size(1900, 900);
   noStroke();
 
@@ -29,11 +37,47 @@ void draw() {
   for (int i = 0; i < particles.length; i++) {
     particles[i].run();
   }
+  //println(mood);
+  update();
 }
 
-void mouseMoved() {
-  float percentX = (float) mouseX / width;
-  float percentY = (float) mouseY / height;
+void update() {
+  float percentX = 0.0;
+  float percentY = 0.0;
+  
+  
+  if (mood == 0.1){
+    percentX = 90;
+    percentY = 10;
+    println("sad");
+  } else if (mood == 0.2){
+    percentX = 50;
+    percentY = 50;
+    println("happy");
+  } else if (mood == 0.3){
+    percentX = 90;
+    percentY = 90;
+    println("neutral");
+  } else if (mood == 0.4){
+    percentX = 10;
+    percentY = 10;
+    println("angry");
+  } else if (mood == 0.5){
+    percentX = 10;
+    percentY = 90;
+    println("fear");
+  } else if (mood == 0.6){
+    percentX = 10;
+    percentY = 50;
+    println("disgust");
+  } else if (mood == 0.7){
+    percentX = 50;
+    percentY = 20;
+    println("surprise");
+  }
+  
+  
+
   float newNoiseScale = map(percentX, 0, 1, 50, 900);//hier
   float newNoiseStrength = map(percentY, 0, 1, 4, 0.7); // hier
   
@@ -91,4 +135,20 @@ class Particle {
     fill(particleColor);
     ellipse(loc.x, loc.y, loc.z, loc.z);
   }
+}
+
+
+void oscEvent(OscMessage theOscMessage) {
+ if (theOscMessage.checkAddrPattern("/wek/outputs")==true) {
+     if(theOscMessage.checkTypetag("f")) { //Now looking for 2 parameters
+        mood = theOscMessage.get(0).floatValue();
+        //println(theOscMessage.get(0).floatValue());
+
+        //Now use these params
+        
+        //println("Received new params value from Wekinator");  
+      } else {
+        println("Error: unexpected params type tag received by Processing");
+      }
+ }
 }
